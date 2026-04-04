@@ -48,7 +48,6 @@ export default function Schedules() {
   const scheduled = schedules?.filter(s => s.status === 'scheduled').length ?? 0;
   const active = schedules?.filter(s => s.status === 'active').length ?? 0;
   const completed = schedules?.filter(s => s.status === 'completed').length ?? 0;
-  const cancelled = schedules?.filter(s => s.status === 'cancelled').length ?? 0;
 
   // ── Filtered list ──
   const filtered = (schedules ?? []).filter(s =>

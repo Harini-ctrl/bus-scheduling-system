@@ -214,7 +214,7 @@ const emptyForm = {
 };
 
 export default function Routes() {
-  const { data: routes, loading, error, refetch } = useFetch(routeService.getAll);
+  const { data: routes, loading, refetch } = useFetch(routeService.getAll);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);

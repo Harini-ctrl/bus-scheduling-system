@@ -4,7 +4,6 @@ import { Bus } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export default function Login() {
-    const navigate = useNavigate();
 
     const [form, setForm] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
@@ -123,7 +122,7 @@ export default function Login() {
                                     bg: 'hover:bg-gray-100',
                                     badge: 'bg-gray-100 text-gray-600',
                                 },
-                            ].map(({ role, email, password, desc, color, bg, badge }) => (
+                            ].map(({ role, email, password, desc, bg, badge }) => (
                                 <div
                                     key={role}
                                     onClick={() => setForm({ email, password })}
