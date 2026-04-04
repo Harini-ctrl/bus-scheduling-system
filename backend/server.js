@@ -11,7 +11,13 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://bus-scheduling-system.vercel.app',
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Routes
