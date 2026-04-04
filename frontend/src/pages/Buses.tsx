@@ -8,6 +8,8 @@ import PageHeader from '../components/ui/PageHeader';
 import { busService } from '../services/busService';
 import { useFetch } from '../hooks/useFetch';
 import type { Bus } from '../types';
+import { exportToCSV } from '../utils/exportCSV';
+import { useRole } from '../hooks/useRole';
 
 // ── Form default values ──
 const emptyForm = { busNumber: '', capacity: '', status: 'active' as Bus['status'] };
@@ -16,15 +18,17 @@ export default function Buses() {
   const { data: buses, loading, error, refetch } = useFetch(busService.getAll);
 
   // Modal state
-  const [isModalOpen, setIsModalOpen]   = useState(false);
-  const [editingBus, setEditingBus]     = useState<Bus | null>(null);
-  const [form, setForm]                 = useState(emptyForm);
-  const [submitting, setSubmitting]     = useState(false);
-  const [formError, setFormError]       = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBus, setEditingBus] = useState<Bus | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const { canEdit, canDelete } = useRole();
 
   // Search + filter
-  const [search, setSearch]   = useState('');
-  const [filter, setFilter]   = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<string>('all');
+
 
   // ── Derived data ──
   const filtered = (buses ?? []).filter(b => {
@@ -33,10 +37,10 @@ export default function Buses() {
     return matchSearch && matchFilter;
   });
 
-  const total       = buses?.length ?? 0;
-  const active      = buses?.filter(b => b.status === 'active').length ?? 0;
+  const total = buses?.length ?? 0;
+  const active = buses?.filter(b => b.status === 'active').length ?? 0;
   const maintenance = buses?.filter(b => b.status === 'maintenance').length ?? 0;
-  const inactive    = buses?.filter(b => b.status === 'inactive').length ?? 0;
+  const inactive = buses?.filter(b => b.status === 'inactive').length ?? 0;
 
   // ── Open modal for Add ──
   const openAdd = () => {
@@ -51,8 +55,8 @@ export default function Buses() {
     setEditingBus(bus);
     setForm({
       busNumber: bus.busNumber,
-      capacity:  String(bus.capacity),
-      status:    bus.status,
+      capacity: String(bus.capacity),
+      status: bus.status,
     });
     setFormError(null);
     setIsModalOpen(true);
@@ -84,8 +88,8 @@ export default function Buses() {
     try {
       const payload = {
         busNumber: form.busNumber.trim().toUpperCase(),
-        capacity:  Number(form.capacity),
-        status:    form.status,
+        capacity: Number(form.capacity),
+        status: form.status,
       };
 
       if (editingBus) {
@@ -114,6 +118,16 @@ export default function Buses() {
     }
   };
 
+  const handleExport = () => {
+    const rows = (buses ?? []).map(b => ({
+      BusNumber: b.busNumber,
+      Capacity: b.capacity,
+      Status: b.status,
+      CreatedAt: new Date(b.createdAt).toLocaleDateString('en-IN'),
+    }));
+    exportToCSV('buses', rows);
+  };
+
   return (
     <>
       <Topbar title="Buses" subtitle="Manage your fleet" />
@@ -125,22 +139,32 @@ export default function Buses() {
           title="Fleet Management"
           subtitle="Add, edit and monitor all buses"
           action={
-            <button
-              onClick={openAdd}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-            >
-              <Plus size={16} />
-              Add Bus
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+              >
+                Export CSV
+              </button>
+              {canEdit && (
+                <button
+                  onClick={openAdd}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+                >
+                  <Plus size={16} />
+                  Add Bus
+                </button>
+              )}
+            </div>
           }
         />
 
         {/* ── Stat Cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Total Buses"  value={total}       subtitle="in fleet"      icon={BusIcon} color="blue"   loading={loading} />
-          <StatCard title="Active"       value={active}      subtitle="on road"       icon={BusIcon} color="green"  loading={loading} />
-          <StatCard title="Maintenance"  value={maintenance} subtitle="being serviced" icon={BusIcon} color="amber"  loading={loading} />
-          <StatCard title="Inactive"     value={inactive}    subtitle="not in use"    icon={BusIcon} color="purple" loading={loading} />
+          <StatCard title="Total Buses" value={total} subtitle="in fleet" icon={BusIcon} color="blue" loading={loading} />
+          <StatCard title="Active" value={active} subtitle="on road" icon={BusIcon} color="green" loading={loading} />
+          <StatCard title="Maintenance" value={maintenance} subtitle="being serviced" icon={BusIcon} color="amber" loading={loading} />
+          <StatCard title="Inactive" value={inactive} subtitle="not in use" icon={BusIcon} color="purple" loading={loading} />
         </div>
 
         {/* ── Table Card ── */}
@@ -162,11 +186,10 @@ export default function Buses() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium capitalize transition-colors ${
-                    filter === f
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                  }`}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium capitalize transition-colors ${filter === f
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
                 >
                   {f}
                 </button>
@@ -208,7 +231,7 @@ export default function Buses() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    {['Bus Number', 'Capacity', 'Status', 'Created', 'Actions'].map(h => (
+                    {['Bus Number', 'Capacity', 'Status', 'Created', ...(canEdit || canDelete ? ['Actions'] : [])].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
                         {h}
                       </th>
@@ -234,20 +257,24 @@ export default function Buses() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openEdit(bus)}
-                            className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                          >
-                            <Pencil size={13} />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(bus)}
-                            className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={13} />
-                            Delete
-                          </button>
+                          {canEdit && (
+                            <button
+                              onClick={() => openEdit(bus)}
+                              className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                            >
+                              <Pencil size={13} />
+                              Edit
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              onClick={() => handleDelete(bus)}
+                              className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={13} />
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

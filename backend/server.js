@@ -1,8 +1,9 @@
- const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+ const express    = require("express");
+const mongoose   = require("mongoose");
+const cors       = require("cors");
 require("dotenv").config();
 
+const authRoutes     = require("./routes/authRoutes");
 const busRoutes      = require("./routes/busRoutes");
 const driverRoutes   = require("./routes/driverRoutes");
 const routeRoutes    = require("./routes/routeRoutes");
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use("/api/auth",      authRoutes);
 app.use("/api/buses",     busRoutes);
 app.use("/api/drivers",   driverRoutes);
 app.use("/api/routes",    routeRoutes);

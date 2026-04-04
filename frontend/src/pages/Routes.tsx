@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import {
   Plus, Trash2, MapPin, Navigation,
@@ -13,13 +13,14 @@ import Modal from '../components/ui/Modal';
 import { routeService } from '../services/routeService';
 import { useFetch } from '../hooks/useFetch';
 import type { Route, AddRouteResponse, Coordinate } from '../types';
+import { useRole } from '../hooks/useRole';
 
 // ── Fix Leaflet marker icons ──
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
 const ROUTE_COLORS = [
@@ -50,7 +51,7 @@ function MapRenderer({
   previewCoords: Coordinate[];
 }) {
   const map = useMap();
-  const layersRef  = useRef<Map<string, L.LayerGroup>>(new Map());
+  const layersRef = useRef<Map<string, L.LayerGroup>>(new Map());
   const previewRef = useRef<L.LayerGroup | null>(null);
   const overlappingIdsStr = Array.from(overlappingIds).sort().join(',');
 
@@ -73,9 +74,9 @@ function MapRenderer({
     routes.forEach(route => {
       if (route.coordinates.length < 2) return;
 
-      const isSelected    = route._id === selectedId;
+      const isSelected = route._id === selectedId;
       const isOverlapping = overlappingIds.has(route._id);
-      const baseColor     = getRouteColor(route._id);
+      const baseColor = getRouteColor(route._id);
       const color = isSelected ? '#1d4ed8' : isOverlapping ? '#ef4444' : baseColor;
       const positions = route.coordinates.map(c => [c.lat, c.lng] as [number, number]);
       const group = L.layerGroup();
@@ -86,8 +87,8 @@ function MapRenderer({
 
       const line = L.polyline(positions, {
         color,
-        weight:    isSelected ? 8 : 4,
-        opacity:   isSelected ? 1 : 0.65,
+        weight: isSelected ? 8 : 4,
+        opacity: isSelected ? 1 : 0.65,
         dashArray: isOverlapping && !isSelected ? '8 4' : undefined,
       });
 
@@ -97,13 +98,13 @@ function MapRenderer({
           <p style="color:#6b7280">${route.startLocation} → ${route.endLocation}</p>
           <p style="color:#6b7280;margin-top:2px">${route.distance} km · ${route.stops.length} stops</p>
           ${isOverlapping ? '<p style="color:#ef4444;margin-top:4px;font-weight:600">⚠ Overlapping route</p>' : ''}
-          ${isSelected    ? '<p style="color:#1d4ed8;margin-top:4px;font-weight:600">● Selected</p>' : ''}
+          ${isSelected ? '<p style="color:#1d4ed8;margin-top:4px;font-weight:600">● Selected</p>' : ''}
         </div>
       `);
 
-      line.on('click',     () => onSelectRoute(route));
+      line.on('click', () => onSelectRoute(route));
       line.on('mouseover', () => { if (!isSelected) line.setStyle({ weight: 6, opacity: 1 }); });
-      line.on('mouseout',  () => { if (!isSelected) line.setStyle({ weight: 4, opacity: 0.65 }); });
+      line.on('mouseout', () => { if (!isSelected) line.setStyle({ weight: 4, opacity: 0.65 }); });
       line.addTo(group);
 
       route.coordinates.forEach(coord => {
@@ -148,7 +149,7 @@ function MapRenderer({
 
     previewCoords.forEach((coord, index) => {
       const isFirst = index === 0;
-      const isLast  = index === previewCoords.length - 1;
+      const isLast = index === previewCoords.length - 1;
       const bgColor = isFirst ? '#22c55e' : isLast ? '#f97316' : '#3b82f6';
 
       const icon = L.divIcon({
@@ -163,8 +164,8 @@ function MapRenderer({
           ">${index + 1}</div>
         `,
         className: '',
-        iconSize:  [26, 26],
-        iconAnchor:[13, 13],
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
       });
 
       L.marker([coord.lat, coord.lng], { icon })
@@ -201,28 +202,29 @@ function MapRenderer({
 // ── Empty stop — counter ensures unique IDs ──
 let stopCounter = 0;
 const emptyStop = (): Coordinate & { id: number } => ({
-  id:    ++stopCounter,
-  lat:   0,
-  lng:   0,
+  id: ++stopCounter,
+  lat: 0,
+  lng: 0,
   label: '',
 });
 
 const emptyForm = {
   routeName: '',
-  distance:  '',
+  distance: '',
 };
 
 export default function Routes() {
   const { data: routes, loading, error, refetch } = useFetch(routeService.getAll);
 
-  const [isModalOpen, setIsModalOpen]       = useState(false);
-  const [form, setForm]                     = useState(emptyForm);
-  const [stops, setStops]                   = useState<(Coordinate & { id: number })[]>([emptyStop(), emptyStop()]);
-  const [submitting, setSubmitting]         = useState(false);
-  const [formError, setFormError]           = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [stops, setStops] = useState<(Coordinate & { id: number })[]>([emptyStop(), emptyStop()]);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [overlapWarning, setOverlapWarning] = useState<AddRouteResponse['overlaps']>([]);
-  const [selectedRoute, setSelectedRoute]   = useState<Route | null>(null);
-  const [expandedStop, setExpandedStop]     = useState<number | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const [expandedStop, setExpandedStop] = useState<number | null>(null);
+  const { canEdit, canDelete } = useRole();
 
   const validStops = stops.filter(s =>
     s.label.trim() && s.lat !== 0 && s.lng !== 0
@@ -232,7 +234,7 @@ export default function Routes() {
     lat: s.lat, lng: s.lng, label: s.label,
   }));
 
-  const total      = routes?.length ?? 0;
+  const total = routes?.length ?? 0;
   const withCoords = routes?.filter(r => r.coordinates.length > 0).length ?? 0;
 
   const overlappingRouteIds = new Set<string>();
@@ -295,7 +297,7 @@ export default function Routes() {
 
   const validate = () => {
     if (!form.routeName.trim()) return 'Route name is required';
-    if (validStops.length < 2)  return 'At least 2 complete stops are required (name + coordinates)';
+    if (validStops.length < 2) return 'At least 2 complete stops are required (name + coordinates)';
     return null;
   };
 
@@ -312,12 +314,12 @@ export default function Routes() {
       }));
 
       const response = await routeService.add({
-        routeName:     form.routeName.trim(),
+        routeName: form.routeName.trim(),
         startLocation: coords[0].label,
-        endLocation:   coords[coords.length - 1].label,
-        stops:         coords.map(c => c.label),
-        distance:      Number(form.distance) || 0,
-        coordinates:   coords,
+        endLocation: coords[coords.length - 1].label,
+        stops: coords.map(c => c.label),
+        distance: Number(form.distance) || 0,
+        coordinates: coords,
       });
 
       if (response.overlaps && response.overlaps.length > 0) {
@@ -358,13 +360,15 @@ export default function Routes() {
           title="Route Management"
           subtitle="Add routes with real coordinates — previewed live on map"
           action={
-            <button
-              onClick={openAdd}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-            >
-              <Plus size={16} />
-              Add Route
-            </button>
+            canEdit && (
+              <button
+                onClick={openAdd}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+              >
+                <Plus size={16} />
+                Add Route
+              </button>
+            )
           }
         />
 
@@ -483,18 +487,17 @@ export default function Routes() {
                 <div className="divide-y divide-gray-50 max-h-[440px] overflow-y-auto">
                   {(routes ?? []).map(route => {
                     const isOverlapping = overlappingRouteIds.has(route._id);
-                    const isSelected    = selectedRoute?._id === route._id;
-                    const color         = getRouteColor(route._id);
+                    const isSelected = selectedRoute?._id === route._id;
+                    const color = getRouteColor(route._id);
 
                     return (
                       <div
                         key={route._id}
                         onClick={() => handleSelectRoute(route)}
-                        className={`px-4 py-3.5 cursor-pointer transition-all border-l-4 relative ${
-                          isSelected
+                        className={`px-4 py-3.5 cursor-pointer transition-all border-l-4 relative ${isSelected
                             ? 'bg-blue-50 border-blue-600'
                             : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-start gap-2.5 flex-1 min-w-0">
@@ -504,8 +507,8 @@ export default function Routes() {
                                 background: isSelected
                                   ? '#1d4ed8'
                                   : isOverlapping
-                                  ? '#ef4444'
-                                  : color
+                                    ? '#ef4444'
+                                    : color
                               }}
                             />
                             <div className="min-w-0">
@@ -536,12 +539,15 @@ export default function Routes() {
                               </div>
                             </div>
                           </div>
-                          <button
-                            onClick={e => { e.stopPropagation(); handleDelete(route); }}
-                            className="text-gray-300 hover:text-red-500 transition-colors p-1 flex-shrink-0"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {canDelete && (
+                            <button
+                              onClick={e => { e.stopPropagation(); handleDelete(route); }}
+                              className="text-gray-300 hover:text-red-500 transition-colors p-1 flex-shrink-0"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+
                         </div>
 
                         {isSelected && (
@@ -667,41 +673,38 @@ export default function Routes() {
                 <div className="space-y-2">
                   {stops.map((stop, index) => {
                     const isExpanded = expandedStop === stop.id;
-                    const isValid    = Boolean(stop.label.trim() && stop.lat !== 0 && stop.lng !== 0);
-                    const isFirst    = index === 0;
-                    const isLast     = index === stops.length - 1;
+                    const isValid = Boolean(stop.label.trim() && stop.lat !== 0 && stop.lng !== 0);
+                    const isFirst = index === 0;
+                    const isLast = index === stops.length - 1;
 
                     return (
                       <div
                         key={stop.id}
-                        className={`border rounded-lg overflow-hidden transition-all ${
-                          isValid
+                        className={`border rounded-lg overflow-hidden transition-all ${isValid
                             ? 'border-green-200 bg-green-50'
                             : 'border-gray-200 bg-white'
-                        }`}
+                          }`}
                       >
                         {/* Stop header */}
                         <div
                           className="flex items-center gap-2 px-3 py-2.5 cursor-pointer"
                           onClick={() => setExpandedStop(isExpanded ? null : stop.id)}
                         >
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
-                            isFirst ? 'bg-green-500' : isLast ? 'bg-orange-500' : 'bg-blue-500'
-                          }`}>
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${isFirst ? 'bg-green-500' : isLast ? 'bg-orange-500' : 'bg-blue-500'
+                            }`}>
                             {index + 1}
                           </div>
 
-                          <span className={`text-xs flex-1 ${
-                            stop.label.trim() ? 'text-gray-800 font-medium' : 'text-gray-400'
-                          }`}>
+                          <span className={`text-xs flex-1 ${stop.label.trim() ? 'text-gray-800 font-medium' : 'text-gray-400'
+                            }`}>
                             {stop.label.trim() || `Stop ${index + 1} — click to fill`}
                           </span>
 
                           <div className="flex items-center gap-1.5">
                             {isValid && (
                               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <circle cx="7" cy="7" r="7" fill="#22c55e"/>
-                                <path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="7" cy="7" r="7" fill="#22c55e" />
+                                <path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             )}
                             {stops.length > 2 && (

@@ -15,6 +15,8 @@ import { routeService } from '../services/routeService';
 import { useFetch } from '../hooks/useFetch';
 import type { Schedule } from '../types';
 import type { CreateScheduleInput } from '../services/scheduleService';
+import { exportToCSV } from '../utils/exportCSV';
+import { useRole } from '../hooks/useRole';
 
 const emptyForm: CreateScheduleInput = {
   busId: '',
@@ -39,6 +41,7 @@ export default function Schedules() {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const { canEdit, canDelete } = useRole();
 
   // ── Derived stats ──
   const total = schedules?.length ?? 0;
@@ -157,6 +160,18 @@ export default function Schedules() {
         return [];
     }
   };
+  const handleExport = () => {
+    const rows = (schedules ?? []).map(s => ({
+      Bus: s.busId?.busNumber ?? '—',
+      Driver: s.driverId?.name ?? '—',
+      Route: s.routeId?.routeName ?? '—',
+      DepartureTime: s.departureTime,
+      ArrivalTime: s.arrivalTime,
+      DutyType: s.dutyType,
+      Status: s.status,
+    }));
+    exportToCSV('schedules', rows);
+  };
 
   return (
     <>
@@ -169,13 +184,23 @@ export default function Schedules() {
           title="Schedule Management"
           subtitle="Create linked and unlinked duty schedules"
           action={
-            <button
-              onClick={openAdd}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-            >
-              <Plus size={16} />
-              New Schedule
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+              >
+                Export CSV
+              </button>
+              {canEdit && (
+                <button
+                  onClick={openAdd}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+                >
+                  <Plus size={16} />
+                  New Schedule
+                </button>
+              )}
+            </div>
           }
         />
 
@@ -198,8 +223,8 @@ export default function Schedules() {
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`text-xs px-3 py-1.5 rounded-lg font-medium capitalize transition-colors ${filter === f
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                 >
                   {f}
@@ -245,7 +270,7 @@ export default function Schedules() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    {['Bus', 'Driver', 'Route', 'Time', 'Duty Type', 'Status', 'Actions'].map(h => (
+                    {['Bus', 'Driver', 'Route', 'Time', 'Duty Type', 'Status', ...(canDelete ? ['Actions'] : [])].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
                         {h}
                       </th>
@@ -284,11 +309,6 @@ export default function Schedules() {
                             +{s.restDuration}min rest
                           </p>
                         )}
-                        {s.dutyType === 'unlinked' && (
-                          <p className="text-purple-500 mt-0.5">
-                            +{s.restDuration}min rest
-                          </p>
-                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         <StatusBadge status={s.dutyType} />
@@ -296,18 +316,22 @@ export default function Schedules() {
                       <td className="px-5 py-3.5">
                         <StatusBadge status={s.status} />
                       </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {getStatusActions(s)}
-                          <button
-                            onClick={() => handleDelete(s)}
-                            className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={11} />
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+                     {(canEdit || canDelete) && (
+  <td className="px-5 py-3.5">
+    <div className="flex items-center gap-1 flex-wrap">
+      {getStatusActions(s)}
+      {canDelete && (
+        <button
+          onClick={() => handleDelete(s)}
+          className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
+        >
+          <Trash2 size={11} />
+          Delete
+        </button>
+      )}
+    </div>
+  </td>
+)}
                     </tr>
                   ))}
                 </tbody>
@@ -344,10 +368,10 @@ export default function Schedules() {
                   key={type}
                   onClick={() => setForm(f => ({ ...f, dutyType: type }))}
                   className={`py-2.5 px-3 rounded-lg text-sm font-medium border-2 transition-all capitalize ${form.dutyType === type
-                      ? type === 'linked'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-violet-500 bg-violet-50 text-violet-700'
-                      : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    ? type === 'linked'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-violet-500 bg-violet-50 text-violet-700'
+                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
                     }`}
                 >
                   {type}

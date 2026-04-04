@@ -1,26 +1,320 @@
-# Automated Bus Scheduling System — DTC
+# Automated Bus Scheduling and Route Management System
 
-Full-stack system for managing bus schedules, driver duties, and route planning.
+A full-stack web application built for **Delhi Transport Corporation (DTC)** to automate bus scheduling, manage driver duties, and visualize routes on an interactive GIS map.
+
+---
+
+## Live Demo
+
+> Add your deployed URLs here after deployment
+
+- **Frontend:** [Vercel URL]
+- **Backend:** [Render URL]
+
+### Demo Accounts
+
+| Role | Email | Password | Access |
+|------|-------|----------|--------|
+| Admin | admin@dtc.com | admin123 | Full access |
+| Scheduler | scheduler@dtc.com | scheduler123 | Manage schedules |
+| Viewer | viewer@dtc.com | viewer123 | Read only |
+
+---
+
+## Screenshots
+
+> Add screenshots of all 5 pages here
+
+---
 
 ## Tech Stack
-- Frontend: React + TypeScript + Vite + Tailwind CSS + Leaflet.js
-- Backend: Node.js + Express + MongoDB
 
-## Features
-- Linked and unlinked duty scheduling
-- Automatic bus and driver conflict detection  
-- Driver rest period management
-- GIS route visualization with overlap detection
-- Full CRUD for buses, drivers, routes, schedules
-
-## Setup
+### Frontend
+- React 18 + TypeScript + Vite
+- Tailwind CSS
+- Leaflet.js + React Leaflet (GIS map)
+- Recharts (dashboard charts)
+- React Router v6
+- Axios
 
 ### Backend
+- Node.js + Express.js
+- MongoDB + Mongoose
+- JWT Authentication (jsonwebtoken)
+- bcryptjs (password hashing)
+
+---
+
+## Features
+
+### Authentication & Authorization
+- JWT-based authentication with 24-hour token expiry
+- Role-based access control — Admin, Scheduler, Viewer
+- Protected routes on both frontend and backend
+- bcrypt password hashing
+
+### Bus Management
+- Add, edit, delete buses
+- Filter by status (active / maintenance / inactive)
+- Search by bus number
+- Export to CSV
+- Stat cards showing fleet breakdown
+
+### Driver Management
+- Add, edit, delete drivers
+- Shift time management (shiftStart / shiftEnd)
+- Driver status tracking (available / on-duty / on-rest / off-duty)
+- Rest period display — shows restUntil time
+- Search by name or license number
+
+### Linked Duty Scheduling
+- Assign a specific driver to a specific bus for their entire shift
+- System enforces driver stays with same bus — blocks reassignment to different bus
+- Backend conflict detection prevents double-booking
+
+### Unlinked Duty Scheduling
+- Driver completes a trip and hands over bus to another driver
+- Configurable rest duration per schedule (default 30 minutes)
+- System automatically sets driver to on-rest after completion
+- Driver blocked from new schedules during rest period
+- restUntil timestamp stored on driver document
+
+### Conflict Detection
+- Bus conflict — same bus cannot be assigned at same departure time
+- Driver conflict — same driver cannot be assigned at same departure time
+- Linked duty conflict — driver cannot be linked to two different buses simultaneously
+- Rest period conflict — driver on rest cannot be assigned new schedule
+- All conflicts return clear error messages from backend
+
+### Route Management
+- Add routes with real coordinates from Google Maps
+- Coordinates auto-parsed from pasted lat,lng values
+- Live route preview on map while adding stops
+- Delete routes
+
+### GIS Map Visualization
+- Leaflet.js interactive map centered on Delhi
+- All routes drawn as colored polylines
+- Overlapping routes highlighted in red dashed lines
+- Stop markers with popup showing stop name and route
+- Click route on map or sidebar to highlight it
+- Route selection shows blue glow effect
+- Overlap detection based on shared stop names
+
+### Dashboard
+- Real-time stat cards — buses, drivers, routes, schedules
+- Schedule status bar chart (Recharts)
+- Fleet status breakdown with progress bars
+- Driver status breakdown
+- Recent schedules table
+- Quick stats — linked/unlinked/completed/cancelled counts
+
+### Role-Based UI
+- Admin — full access, all buttons visible
+- Scheduler — can create/manage, no delete buttons
+- Viewer — read only, Actions column hidden entirely, no add/edit/delete
+- Export CSV available to all roles
+
+---
+
+## Project Structure
+
+```
+backend/
+├── controllers/
+│   ├── authController.js
+│   ├── busController.js
+│   ├── driverController.js
+│   ├── routeController.js
+│   └── scheduleController.js
+├── middleware/
+│   ├── authMiddleware.js
+│   └── roleMiddleware.js
+├── models/
+│   ├── Bus.js
+│   ├── Driver.js
+│   ├── Route.js
+│   ├── Schedule.js
+│   └── User.js
+├── routes/
+│   ├── authRoutes.js
+│   ├── busRoutes.js
+│   ├── driverRoutes.js
+│   ├── routeRoutes.js
+│   └── scheduleRoutes.js
+└── server.js
+
+frontend/
+└── src/
+    ├── components/
+    │   ├── layout/
+    │   │   ├── Layout.tsx
+    │   │   ├── Sidebar.tsx
+    │   │   └── Topbar.tsx
+    │   └── ui/
+    │       ├── Modal.tsx
+    │       ├── PageHeader.tsx
+    │       ├── Spinner.tsx
+    │       ├── StatCard.tsx
+    │       └── StatusBadge.tsx
+    ├── hooks/
+    │   ├── useFetch.ts
+    │   └── useRole.ts
+    ├── pages/
+    │   ├── Buses.tsx
+    │   ├── Dashboard.tsx
+    │   ├── Drivers.tsx
+    │   ├── Login.tsx
+    │   ├── NotFound.tsx
+    │   ├── Routes.tsx
+    │   └── Schedules.tsx
+    ├── services/
+    │   ├── api.ts
+    │   ├── authService.ts
+    │   ├── busService.ts
+    │   ├── driverService.ts
+    │   ├── routeService.ts
+    │   └── scheduleService.ts
+    ├── types/
+    │   └── index.ts
+    ├── utils/
+    │   └── exportCSV.ts
+    └── App.tsx
+```
+
+---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | /api/auth/register | Public | Register new user |
+| POST | /api/auth/login | Public | Login and get JWT token |
+| GET | /api/auth/me | All roles | Get current user |
+
+### Buses
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | /api/buses | All roles | Get all buses |
+| GET | /api/buses/:id | All roles | Get single bus |
+| POST | /api/buses | Admin, Scheduler | Add bus |
+| PUT | /api/buses/:id | Admin, Scheduler | Update bus |
+| DELETE | /api/buses/:id | Admin only | Delete bus |
+
+### Drivers
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | /api/drivers | All roles | Get all drivers |
+| GET | /api/drivers/:id | All roles | Get single driver |
+| POST | /api/drivers | Admin, Scheduler | Add driver |
+| PUT | /api/drivers/:id | Admin, Scheduler | Update driver |
+| DELETE | /api/drivers/:id | Admin only | Delete driver |
+
+### Routes
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | /api/routes | All roles | Get all routes |
+| GET | /api/routes/:id | All roles | Get single route |
+| POST | /api/routes | Admin, Scheduler | Add route + overlap check |
+| PUT | /api/routes/:id | Admin, Scheduler | Update route |
+| DELETE | /api/routes/:id | Admin only | Delete route |
+
+### Schedules
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | /api/schedules | All roles | Get all schedules (populated) |
+| GET | /api/schedules/:id | All roles | Get single schedule |
+| POST | /api/schedules | Admin, Scheduler | Create schedule + conflict checks |
+| PATCH | /api/schedules/:id/status | Admin, Scheduler | Update schedule status |
+| DELETE | /api/schedules/:id | Admin only | Delete schedule |
+
+---
+
+## Setup and Installation
+
+### Prerequisites
+- Node.js 18+
+- MongoDB (local or MongoDB Atlas)
+
+### Backend Setup
+
+```bash
 cd backend
 npm install
-npm run dev
+```
 
-### Frontend  
+Create `.env` file in backend folder:
+```
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+JWT_SECRET=your_secret_key_here
+```
+
+Start backend:
+```bash
+npm run dev
+```
+
+### Frontend Setup
+
+```bash
 cd frontend
 npm install
 npm run dev
+```
+
+Frontend runs on `http://localhost:5173`
+Backend runs on `http://localhost:5000`
+
+### Seed Demo Data
+
+Register demo accounts via Postman:
+
+```
+POST http://localhost:5000/api/auth/register
+```
+
+```json
+{ "name": "DTC Admin", "email": "admin@dtc.com", "password": "admin123", "role": "admin" }
+{ "name": "Ravi Scheduler", "email": "scheduler@dtc.com", "password": "scheduler123", "role": "scheduler" }
+{ "name": "DTC Viewer", "email": "viewer@dtc.com", "password": "viewer123", "role": "viewer" }
+```
+
+---
+
+## Deployment
+
+### Backend — Render.com
+1. Push code to GitHub
+2. Go to render.com → New Web Service
+3. Connect GitHub repo, set root directory to `backend`
+4. Build command: `npm install`
+5. Start command: `node server.js`
+6. Add environment variables: `MONGO_URI`, `PORT`, `JWT_SECRET`
+
+### Frontend — Vercel
+1. Go to vercel.com → New Project
+2. Connect GitHub repo, set root directory to `frontend`
+3. Framework preset: Vite
+4. Add environment variable: `VITE_API_URL=your_render_backend_url/api`
+
+---
+
+## Key Technical Decisions
+
+**JWT over sessions** — Stateless authentication scales better. No server-side session storage needed.
+
+**Leaflet.js over Google Maps** — Free, no API key required, no billing risk for a prototype.
+
+**useFetch custom hook** — Centralizes loading/error state management. Avoids repeating useState + useEffect in every page.
+
+**Separate service files** — Each entity has its own service file. If an API endpoint changes, only one file needs updating.
+
+**Vite proxy** — Frontend calls `/api/*` which Vite forwards to `localhost:5000`. No CORS issues during development.
+
+---
+
+## Author
+
+Built by Harini as a portfolio project demonstrating full-stack development with React, TypeScript, Node.js, MongoDB, and GIS integration.

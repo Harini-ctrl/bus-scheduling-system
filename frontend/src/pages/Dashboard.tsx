@@ -8,6 +8,7 @@ import { driverService } from '../services/driverService';
 import { routeService } from '../services/routeService';
 import { scheduleService } from '../services/scheduleService';
 import type { Bus as BusType, Driver, Route, Schedule } from '../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function Dashboard() {
   const [buses, setBuses]         = useState<BusType[]>([]);
@@ -38,6 +39,18 @@ export default function Dashboard() {
   const activeBuses      = buses.filter(b => b.status === 'active').length;
   const availableDrivers = drivers.filter(d => d.status === 'available').length;
   const linkedSchedules  = schedules.filter(s => s.dutyType === 'linked').length;
+
+const scheduled  = schedules.filter(s => s.status === 'scheduled').length;
+const active     = schedules.filter(s => s.status === 'active').length;
+const completed  = schedules.filter(s => s.status === 'completed').length;
+const cancelled  = schedules.filter(s => s.status === 'cancelled').length;
+
+  const chartData = [
+  { name: 'Scheduled',  value: scheduled,  color: '#3b82f6' },
+  { name: 'Active',     value: active,      color: '#22c55e' },
+  { name: 'Completed',  value: completed,   color: '#8b5cf6' },
+  { name: 'Cancelled',  value: cancelled,   color: '#ef4444' },
+];
 
   return (
     <>
@@ -88,7 +101,43 @@ export default function Dashboard() {
             loading={loading}
           />
         </div>
-
+{/* Chart */}
+<div className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
+  <h2 className="text-sm font-semibold text-gray-900 mb-4">Schedule Status Overview</h2>
+  {loading ? (
+    <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />
+  ) : (
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={chartData} barSize={40}>
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 12, fill: '#9ca3af' }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <YAxis
+          tick={{ fontSize: 12, fill: '#9ca3af' }}
+          axisLine={false}
+          tickLine={false}
+          allowDecimals={false}
+        />
+        <Tooltip
+          contentStyle={{
+            fontSize: 12,
+            borderRadius: 8,
+            border: '1px solid #f3f4f6',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+          }}
+        />
+        <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+          {chartData.map((entry, index) => (
+            <Cell key={index} fill={entry.color} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  )}
+</div>
         {/* ── Two column layout ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

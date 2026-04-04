@@ -8,14 +8,15 @@ import PageHeader from '../components/ui/PageHeader';
 import { driverService } from '../services/driverService';
 import { useFetch } from '../hooks/useFetch';
 import type { Driver } from '../types';
+import { useRole } from '../hooks/useRole';
 
 const emptyForm = {
-  name:          '',
+  name: '',
   licenseNumber: '',
-  phone:         '',
-  shiftStart:    '',
-  shiftEnd:      '',
-  status:        'available' as Driver['status'],
+  phone: '',
+  shiftStart: '',
+  shiftEnd: '',
+  status: 'available' as Driver['status'],
 };
 
 export default function Drivers() {
@@ -23,11 +24,12 @@ export default function Drivers() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
-  const [form, setForm]         = useState(emptyForm);
+  const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError]   = useState<string | null>(null);
-  const [search, setSearch]         = useState('');
-  const [filter, setFilter]         = useState<string>('all');
+  const [formError, setFormError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<string>('all');
+  const { canEdit, canDelete } = useRole();
 
   // ── Derived data ──
   const filtered = (drivers ?? []).filter(d => {
@@ -38,10 +40,10 @@ export default function Drivers() {
     return matchSearch && matchFilter;
   });
 
-  const total     = drivers?.length ?? 0;
+  const total = drivers?.length ?? 0;
   const available = drivers?.filter(d => d.status === 'available').length ?? 0;
-  const onDuty    = drivers?.filter(d => d.status === 'on-duty').length ?? 0;
-  const onRest    = drivers?.filter(d => d.status === 'on-rest').length ?? 0;
+  const onDuty = drivers?.filter(d => d.status === 'on-duty').length ?? 0;
+  const onRest = drivers?.filter(d => d.status === 'on-rest').length ?? 0;
 
   // ── Open Add modal ──
   const openAdd = () => {
@@ -55,12 +57,12 @@ export default function Drivers() {
   const openEdit = (driver: Driver) => {
     setEditingDriver(driver);
     setForm({
-      name:          driver.name,
+      name: driver.name,
       licenseNumber: driver.licenseNumber,
-      phone:         driver.phone ?? '',
-      shiftStart:    driver.shiftStart ?? '',
-      shiftEnd:      driver.shiftEnd ?? '',
-      status:        driver.status,
+      phone: driver.phone ?? '',
+      shiftStart: driver.shiftStart ?? '',
+      shiftEnd: driver.shiftEnd ?? '',
+      status: driver.status,
     });
     setFormError(null);
     setIsModalOpen(true);
@@ -75,7 +77,7 @@ export default function Drivers() {
 
   // ── Validate ──
   const validate = () => {
-    if (!form.name.trim())          return 'Driver name is required';
+    if (!form.name.trim()) return 'Driver name is required';
     if (!form.licenseNumber.trim()) return 'License number is required';
     if (form.shiftStart && form.shiftEnd && form.shiftStart >= form.shiftEnd)
       return 'Shift end must be after shift start';
@@ -92,12 +94,12 @@ export default function Drivers() {
 
     try {
       const payload = {
-        name:          form.name.trim(),
+        name: form.name.trim(),
         licenseNumber: form.licenseNumber.trim().toUpperCase(),
-        phone:         form.phone.trim(),
-        shiftStart:    form.shiftStart,
-        shiftEnd:      form.shiftEnd,
-        status:        form.status,
+        phone: form.phone.trim(),
+        shiftStart: form.shiftStart,
+        shiftEnd: form.shiftEnd,
+        status: form.status,
       };
 
       if (editingDriver) {
@@ -145,22 +147,24 @@ export default function Drivers() {
           title="Driver Management"
           subtitle="Add, edit and monitor all drivers"
           action={
-            <button
-              onClick={openAdd}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-            >
-              <Plus size={16} />
-              Add Driver
-            </button>
+            canEdit && (
+              <button
+                onClick={openAdd}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+              >
+                <Plus size={16} />
+                Add Driver
+              </button>
+            )
           }
         />
 
         {/* ── Stat Cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Total Drivers" value={total}     subtitle="registered"  icon={Users} color="blue"   loading={loading} />
-          <StatCard title="Available"     value={available} subtitle="ready"       icon={Users} color="green"  loading={loading} />
-          <StatCard title="On Duty"       value={onDuty}    subtitle="driving"     icon={Users} color="amber"  loading={loading} />
-          <StatCard title="On Rest"       value={onRest}    subtitle="resting"     icon={Users} color="purple" loading={loading} />
+          <StatCard title="Total Drivers" value={total} subtitle="registered" icon={Users} color="blue" loading={loading} />
+          <StatCard title="Available" value={available} subtitle="ready" icon={Users} color="green" loading={loading} />
+          <StatCard title="On Duty" value={onDuty} subtitle="driving" icon={Users} color="amber" loading={loading} />
+          <StatCard title="On Rest" value={onRest} subtitle="resting" icon={Users} color="purple" loading={loading} />
         </div>
 
         {/* ── Table Card ── */}
@@ -180,11 +184,10 @@ export default function Drivers() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium capitalize transition-colors ${
-                    filter === f
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium capitalize transition-colors ${filter === f
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {f}
                 </button>
@@ -226,11 +229,11 @@ export default function Drivers() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    {['Name', 'License', 'Phone', 'Shift', 'Status', 'Actions'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                        {h}
-                      </th>
-                    ))}
+                  {['Name', 'License', 'Phone', 'Shift', 'Status', ...(canEdit || canDelete ? ['Actions'] : [])].map(h => (
+  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
+    {h}
+  </th>
+))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -262,24 +265,30 @@ export default function Drivers() {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => openEdit(driver)}
-                              className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
-                              <Pencil size={13} />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(driver)}
-                              className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={13} />
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+                       {(canEdit || canDelete) && (
+  <td className="px-5 py-3.5">
+    <div className="flex items-center gap-2">
+      {canEdit && (
+        <button
+          onClick={() => openEdit(driver)}
+          className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
+        >
+          <Pencil size={13} />
+          Edit
+        </button>
+      )}
+      {canDelete && (
+        <button
+          onClick={() => handleDelete(driver)}
+          className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
+        >
+          <Trash2 size={13} />
+          Delete
+        </button>
+      )}
+    </div>
+  </td>
+)}
                       </tr>
                     );
                   })}
