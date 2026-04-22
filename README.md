@@ -279,8 +279,8 @@ npm install
 npm run dev
 ```
 
-Frontend runs on `https://bus-scheduling-system.onrender.com`
-Backend runs on `http://localhost:5000`
+Frontend runs on `https://bus-scheduling-system.vercel.app/`
+Backend runs on `https://bus-scheduling-system.onrender.com`
 
 ### Seed Demo Data
 
