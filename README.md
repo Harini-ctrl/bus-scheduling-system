@@ -31,7 +31,7 @@ A full-stack web application built for **Delhi Transport Corporation (DTC)** to 
 ![Drivers](./screenshots/drivers.png)
 
 ### Routes & Map
-![Routes Map](./screenshots/routes-map.png)
+![Routes Map](./screenshots/routes.png)
 
 ### Schedules
 ![Schedules](./screenshots/schedules.png)
