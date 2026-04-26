@@ -354,7 +354,7 @@ export default function Routes() {
     <>
       <Topbar title="Routes" subtitle="Route management and map visualization" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
 
         <PageHeader
           title="Route Management"
@@ -415,7 +415,7 @@ export default function Routes() {
             <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
               <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-900">Live Route Map</h2>
-                <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="hidden sm:flex items-center gap-4 text-xs text-gray-400">
                   <span className="flex items-center gap-1.5">
                     <span className="w-4 h-1.5 bg-blue-500 rounded inline-block" />
                     Normal
@@ -432,7 +432,7 @@ export default function Routes() {
                   <span>Click route to highlight</span>
                 </div>
               </div>
-              <div className="h-[480px]">
+              <div className="h-[300px] sm:h-[480px]">
                 <MapContainer
                   center={[28.6139, 77.2090]}
                   zoom={11}
@@ -484,7 +484,7 @@ export default function Routes() {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-50 max-h-[440px] overflow-y-auto">
+                <div className="divide-y divide-gray-50 max-h-[280px] sm:max-h-[440px] overflow-y-auto">
                   {(routes ?? []).map(route => {
                     const isOverlapping = overlappingRouteIds.has(route._id);
                     const isSelected = selectedRoute?._id === route._id;

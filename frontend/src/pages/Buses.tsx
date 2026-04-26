@@ -132,7 +132,7 @@ export default function Buses() {
     <>
       <Topbar title="Buses" subtitle="Manage your fleet" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
 
         {/* ── Page Header ── */}
         <PageHeader
@@ -181,7 +181,7 @@ export default function Buses() {
               className="w-full sm:w-64 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {/* Filter */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {['all', 'active', 'maintenance', 'inactive'].map(f => (
                 <button
                   key={f}
@@ -228,7 +228,8 @@ export default function Buses() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              {/* Desktop table */}
+              <table className="w-full text-sm hidden sm:table">
                 <thead className="bg-gray-50">
                   <tr>
                     {['Bus Number', 'Capacity', 'Status', 'Created', ...(canEdit || canDelete ? ['Actions'] : [])].map(h => (
@@ -241,38 +242,22 @@ export default function Buses() {
                 <tbody className="divide-y divide-gray-50">
                   {filtered.map(bus => (
                     <tr key={bus._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3.5 font-bold text-gray-900">
-                        {bus.busNumber}
-                      </td>
-                      <td className="px-5 py-3.5 text-gray-600">
-                        {bus.capacity} seats
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <StatusBadge status={bus.status} />
-                      </td>
+                      <td className="px-5 py-3.5 font-bold text-gray-900">{bus.busNumber}</td>
+                      <td className="px-5 py-3.5 text-gray-600">{bus.capacity} seats</td>
+                      <td className="px-5 py-3.5"><StatusBadge status={bus.status} /></td>
                       <td className="px-5 py-3.5 text-gray-400 text-xs">
-                        {bus.createdAt
-                          ? new Date(bus.createdAt).toLocaleDateString('en-IN')
-                          : '—'}
+                        {bus.createdAt ? new Date(bus.createdAt).toLocaleDateString('en-IN') : '—'}
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           {canEdit && (
-                            <button
-                              onClick={() => openEdit(bus)}
-                              className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
-                              <Pencil size={13} />
-                              Edit
+                            <button onClick={() => openEdit(bus)} className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Pencil size={13} />Edit
                             </button>
                           )}
                           {canDelete && (
-                            <button
-                              onClick={() => handleDelete(bus)}
-                              className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={13} />
-                              Delete
+                            <button onClick={() => handleDelete(bus)} className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Trash2 size={13} />Delete
                             </button>
                           )}
                         </div>
@@ -281,6 +266,38 @@ export default function Buses() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile cards */}
+              <div className="sm:hidden divide-y divide-gray-50">
+                {filtered.map(bus => (
+                  <div key={bus._id} className="px-4 py-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-bold text-gray-900">{bus.busNumber}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{bus.capacity} seats</p>
+                      </div>
+                      <StatusBadge status={bus.status} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">
+                        {bus.createdAt ? new Date(bus.createdAt).toLocaleDateString('en-IN') : '—'}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        {canEdit && (
+                          <button onClick={() => openEdit(bus)} className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                            <Pencil size={13} />Edit
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button onClick={() => handleDelete(bus)} className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                            <Trash2 size={13} />Delete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div className="px-5 py-3 border-t border-gray-50 text-xs text-gray-400">
                 Showing {filtered.length} of {total} buses
               </div>

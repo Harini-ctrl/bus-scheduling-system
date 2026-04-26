@@ -14,9 +14,9 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 function PageSkeleton() {
   return (
-    <div className="p-6 max-w-7xl mx-auto animate-pulse">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto animate-pulse">
       <div className="h-14 bg-gray-100 rounded-xl mb-6" />
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="bg-white rounded-xl border border-gray-100 p-5">
             <div className="h-3 bg-gray-200 rounded w-24 mb-4" />
@@ -97,11 +97,11 @@ export default function App() {
         </Route>
 
         {/* Catch all */}
-       <Route path="*" element={
-  <Suspense fallback={<div />}>
-    <NotFound />
-  </Suspense>
-} />
+        <Route path="*" element={
+          <Suspense fallback={<div />}>
+            <NotFound />
+          </Suspense>
+        } />
 
       </Routes>
     </BrowserRouter>

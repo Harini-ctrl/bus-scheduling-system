@@ -140,7 +140,7 @@ export default function Drivers() {
     <>
       <Topbar title="Drivers" subtitle="Manage your drivers" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
 
         {/* ── Page Header ── */}
         <PageHeader
@@ -226,14 +226,13 @@ export default function Drivers() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              {/* Desktop table */}
+              <table className="w-full text-sm hidden sm:table">
                 <thead className="bg-gray-50">
                   <tr>
-                  {['Name', 'License', 'Phone', 'Shift', 'Status', ...(canEdit || canDelete ? ['Actions'] : [])].map(h => (
-  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
-    {h}
-  </th>
-))}
+                    {['Name', 'License', 'Phone', 'Shift', 'Status', ...(canEdit || canDelete ? ['Actions'] : [])].map(h => (
+                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -241,59 +240,79 @@ export default function Drivers() {
                     const restUntil = formatRestUntil(driver.restUntil);
                     return (
                       <tr key={driver._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3.5 font-semibold text-gray-900">
-                          {driver.name}
-                        </td>
-                        <td className="px-5 py-3.5 text-gray-500 font-mono text-xs">
-                          {driver.licenseNumber}
-                        </td>
-                        <td className="px-5 py-3.5 text-gray-500">
-                          {driver.phone || '—'}
-                        </td>
+                        <td className="px-5 py-3.5 font-semibold text-gray-900">{driver.name}</td>
+                        <td className="px-5 py-3.5 text-gray-500 font-mono text-xs">{driver.licenseNumber}</td>
+                        <td className="px-5 py-3.5 text-gray-500">{driver.phone || '—'}</td>
                         <td className="px-5 py-3.5 text-gray-500 text-xs">
-                          {driver.shiftStart && driver.shiftEnd
-                            ? `${driver.shiftStart} – ${driver.shiftEnd}`
-                            : '—'}
+                          {driver.shiftStart && driver.shiftEnd ? `${driver.shiftStart} – ${driver.shiftEnd}` : '—'}
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex flex-col gap-1">
                             <StatusBadge status={driver.status} />
-                            {restUntil && (
-                              <span className="text-xs text-purple-500">
-                                Rest until {restUntil}
-                              </span>
-                            )}
+                            {restUntil && <span className="text-xs text-purple-500">Rest until {restUntil}</span>}
                           </div>
                         </td>
-                       {(canEdit || canDelete) && (
-  <td className="px-5 py-3.5">
-    <div className="flex items-center gap-2">
-      {canEdit && (
-        <button
-          onClick={() => openEdit(driver)}
-          className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
-        >
-          <Pencil size={13} />
-          Edit
-        </button>
-      )}
-      {canDelete && (
-        <button
-          onClick={() => handleDelete(driver)}
-          className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
-        >
-          <Trash2 size={13} />
-          Delete
-        </button>
-      )}
-    </div>
-  </td>
-)}
+                        {(canEdit || canDelete) && (
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2">
+                              {canEdit && (
+                                <button onClick={() => openEdit(driver)} className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                                  <Pencil size={13} />Edit
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button onClick={() => handleDelete(driver)} className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                                  <Trash2 size={13} />Delete
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+
+              {/* Mobile cards */}
+              <div className="sm:hidden divide-y divide-gray-50">
+                {filtered.map(driver => {
+                  const restUntil = formatRestUntil(driver.restUntil);
+                  return (
+                    <div key={driver._id} className="px-4 py-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{driver.name}</p>
+                          <p className="text-xs font-mono text-gray-400 mt-0.5">{driver.licenseNumber}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <StatusBadge status={driver.status} />
+                          {restUntil && <span className="text-xs text-purple-500">Rest until {restUntil}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-400 space-y-0.5">
+                          {driver.phone && <p>{driver.phone}</p>}
+                          {driver.shiftStart && driver.shiftEnd && <p>{driver.shiftStart} – {driver.shiftEnd}</p>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {canEdit && (
+                            <button onClick={() => openEdit(driver)} className="flex items-center gap-1.5 text-xs text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Pencil size={13} />Edit
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button onClick={() => handleDelete(driver)} className="flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Trash2 size={13} />Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="px-5 py-3 border-t border-gray-50 text-xs text-gray-400">
                 Showing {filtered.length} of {total} drivers
               </div>

@@ -10,7 +10,6 @@ interface Props {
 
 export default function Modal({ isOpen, onClose, title, children }: Props) {
 
-  // Close on Escape key
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -19,21 +18,38 @@ export default function Modal({ isOpen, onClose, title, children }: Props) {
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    // Backdrop
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4"
       onClick={onClose}
     >
-      {/* Modal box */}
+      {/* 
+        Mobile: slides up from bottom, full width, rounded top corners only
+        Desktop: centered, max-w-md, fully rounded
+      */}
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
-        onClick={e => e.stopPropagation()} // prevent closing when clicking inside
+        className="
+          bg-white w-full sm:max-w-md
+          rounded-t-2xl sm:rounded-2xl
+          shadow-2xl
+          max-h-[90vh] flex flex-col
+        "
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <h3 className="text-base font-semibold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
@@ -43,8 +59,8 @@ export default function Modal({ isOpen, onClose, title, children }: Props) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-5">
+        {/* Content — scrollable if tall */}
+        <div className="px-6 py-5 overflow-y-auto">
           {children}
         </div>
       </div>

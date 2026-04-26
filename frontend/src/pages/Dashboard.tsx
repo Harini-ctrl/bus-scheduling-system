@@ -56,7 +56,7 @@ const cancelled  = schedules.filter(s => s.status === 'cancelled').length;
     <>
       <Topbar title="Dashboard" subtitle="Delhi Transport Corporation" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
 
         {/* Error Banner */}
         {error && (
@@ -164,7 +164,8 @@ const cancelled  = schedules.filter(s => s.status === 'cancelled').length;
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                {/* Desktop table */}
+                <table className="w-full text-sm hidden sm:table">
                   <thead className="bg-gray-50">
                     <tr>
                       {['Bus', 'Driver', 'Route', 'Departure', 'Duty', 'Status'].map(h => (
@@ -177,28 +178,32 @@ const cancelled  = schedules.filter(s => s.status === 'cancelled').length;
                   <tbody className="divide-y divide-gray-50">
                     {schedules.slice(0, 6).map(s => (
                       <tr key={s._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3 font-semibold text-gray-900">
-                          {s.busId?.busNumber ?? '—'}
-                        </td>
-                        <td className="px-5 py-3 text-gray-600">
-                          {s.driverId?.name ?? '—'}
-                        </td>
-                        <td className="px-5 py-3 text-gray-500 text-xs">
-                          {s.routeId?.routeName ?? '—'}
-                        </td>
-                        <td className="px-5 py-3 text-gray-600">
-                          {s.departureTime}
-                        </td>
-                        <td className="px-5 py-3">
-                          <StatusBadge status={s.dutyType} />
-                        </td>
-                        <td className="px-5 py-3">
-                          <StatusBadge status={s.status} />
-                        </td>
+                        <td className="px-5 py-3 font-semibold text-gray-900">{s.busId?.busNumber ?? '—'}</td>
+                        <td className="px-5 py-3 text-gray-600">{s.driverId?.name ?? '—'}</td>
+                        <td className="px-5 py-3 text-gray-500 text-xs">{s.routeId?.routeName ?? '—'}</td>
+                        <td className="px-5 py-3 text-gray-600">{s.departureTime}</td>
+                        <td className="px-5 py-3"><StatusBadge status={s.dutyType} /></td>
+                        <td className="px-5 py-3"><StatusBadge status={s.status} /></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {/* Mobile cards */}
+                <div className="sm:hidden divide-y divide-gray-50">
+                  {schedules.slice(0, 6).map(s => (
+                    <div key={s._id} className="px-4 py-3">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-semibold text-gray-900 text-sm">{s.busId?.busNumber ?? '—'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <StatusBadge status={s.dutyType} />
+                          <StatusBadge status={s.status} />
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500">{s.driverId?.name ?? '—'} · {s.routeId?.routeName ?? '—'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Dep: {s.departureTime}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

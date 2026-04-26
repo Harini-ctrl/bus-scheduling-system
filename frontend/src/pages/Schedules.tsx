@@ -176,7 +176,7 @@ export default function Schedules() {
     <>
       <Topbar title="Schedules" subtitle="Duty scheduling and conflict management" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
 
         {/* ── Header ── */}
         <PageHeader
@@ -266,22 +266,19 @@ export default function Schedules() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              {/* Desktop table */}
+              <table className="w-full text-sm hidden md:table">
                 <thead className="bg-gray-50">
                   <tr>
                     {['Bus', 'Driver', 'Route', 'Time', 'Duty Type', 'Status', ...(canDelete ? ['Actions'] : [])].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                        {h}
-                      </th>
+                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filtered.map(s => (
                     <tr key={s._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3.5 font-bold text-gray-900">
-                        {s.busId?.busNumber ?? '—'}
-                      </td>
+                      <td className="px-5 py-3.5 font-bold text-gray-900">{s.busId?.busNumber ?? '—'}</td>
                       <td className="px-5 py-3.5">
                         <div>
                           <p className="font-medium text-gray-800">{s.driverId?.name ?? '—'}</p>
@@ -292,49 +289,67 @@ export default function Schedules() {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-gray-500 text-xs">
-                        {s.routeId?.routeName ?? '—'}
-                      </td>
+                      <td className="px-5 py-3.5 text-gray-500 text-xs">{s.routeId?.routeName ?? '—'}</td>
                       <td className="px-5 py-3.5 text-gray-600 text-xs">
                         <div className="flex items-center gap-1">
                           <Clock size={11} className="text-gray-400" />
                           {s.departureTime} → {s.arrivalTime}
-                          {s.arrivalTime < s.departureTime && (
-                            <span className="text-xs text-amber-500 ml-1">+1 day</span>
-                          )}
+                          {s.arrivalTime < s.departureTime && <span className="text-xs text-amber-500 ml-1">+1 day</span>}
                         </div>
-                        {s.dutyType === 'unlinked' && (
-                          <p className="text-purple-500 mt-0.5">
-                            +{s.restDuration}min rest
-                          </p>
-                        )}
+                        {s.dutyType === 'unlinked' && <p className="text-purple-500 mt-0.5">+{s.restDuration}min rest</p>}
                       </td>
-                      <td className="px-5 py-3.5">
-                        <StatusBadge status={s.dutyType} />
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <StatusBadge status={s.status} />
-                      </td>
-                     {(canEdit || canDelete) && (
-  <td className="px-5 py-3.5">
-    <div className="flex items-center gap-1 flex-wrap">
-      {getStatusActions(s)}
-      {canDelete && (
-        <button
-          onClick={() => handleDelete(s)}
-          className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
-        >
-          <Trash2 size={11} />
-          Delete
-        </button>
-      )}
-    </div>
-  </td>
-)}
+                      <td className="px-5 py-3.5"><StatusBadge status={s.dutyType} /></td>
+                      <td className="px-5 py-3.5"><StatusBadge status={s.status} /></td>
+                      {(canEdit || canDelete) && (
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {getStatusActions(s)}
+                            {canDelete && (
+                              <button onClick={() => handleDelete(s)} className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">
+                                <Trash2 size={11} />Delete
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y divide-gray-50">
+                {filtered.map(s => (
+                  <div key={s._id} className="px-4 py-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-bold text-gray-900">{s.busId?.busNumber ?? '—'}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{s.driverId?.name ?? '—'}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <StatusBadge status={s.status} />
+                        <StatusBadge status={s.dutyType} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-1">{s.routeId?.routeName ?? '—'}</p>
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
+                      <Clock size={11} className="text-gray-400" />
+                      {s.departureTime} → {s.arrivalTime}
+                      {s.arrivalTime < s.departureTime && <span className="text-amber-500 ml-1">+1 day</span>}
+                    </p>
+                    {(canEdit || canDelete) && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {getStatusActions(s)}
+                        {canDelete && (
+                          <button onClick={() => handleDelete(s)} className="flex items-center gap-1 text-xs text-red-400 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors">
+                            <Trash2 size={11} />Delete
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
